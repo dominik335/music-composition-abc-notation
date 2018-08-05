@@ -23,7 +23,7 @@ if gpu_restrict:
     config.gpu_options.per_process_gpu_memory_fraction = 0.8
     session = tf.Session(config=config)
 
-use_previous_model = 1
+use_previous_model = 0
 timesteps = seq_len = 20
 batch = 2000
 dropout_rate = 0.2
@@ -33,11 +33,12 @@ select_size = 0
 hidden_layers = 3
 learning_rate = 0.01  # float(raw_input("Learning Rate: "))
 neurons = [1500, 1000, 500]
-neurons = [15, 10, 5]
+#neurons = [15, 10, 5]
 
 
 # load Dataset
 path = "hello"
+path = "nothingam"
 dataset = open(path).read()
 
 # store the list of all unique characters in dataset
