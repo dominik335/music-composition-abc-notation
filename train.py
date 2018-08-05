@@ -13,13 +13,31 @@ import random
 import sys
 import os
 import tensorflow as tf
+from keras.callbacks import CSVLogger
 
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.8
-session = tf.Session(config=config)
+gpu_restrict = True
+#gpu_restrict = False
+
+if gpu_restrict:
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction = 0.8
+    session = tf.Session(config=config)
+
+use_previous_model = 1
+timesteps = seq_len = 20
+batch = 2000
+dropout_rate = 0.2
+epochs = 1
+select_size = 0
+
+hidden_layers = 3
+learning_rate = 0.01  # float(raw_input("Learning Rate: "))
+neurons = [1500, 1000, 500]
+neurons = [15, 10, 5]
+
 
 # load Dataset
-path = "hello"  # raw_input("Enter file name (example: Wittgenstein.txt) for training and testing data (make sure it's in the same directory):\n ")
+path = "hello"
 dataset = open(path).read()
 
 # store the list of all unique characters in dataset
@@ -35,7 +53,7 @@ print("Vocabulary: ", vocabulary)
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
 
-mapvar = "y"  # raw_input("Do you want to see the character to integer map? (y/n): ")
+mapvar = "y"
 
 if mapvar == "y" or mapvar == "Y":
     # Show the map from Char to Int
@@ -43,27 +61,14 @@ if mapvar == "y" or mapvar == "Y":
     for char in chars:
         print(char, ' is mapped to ', char_to_int[char], ' and vice versa.')
 
-# Asking the important questions
 sample_len = 30  # int(raw_input("\nLength of sample text: "))
 temperature = 1  # float(raw_input("Temperature: "))
-print("\nChoose:")
+
 print("Enter 0 to create a model and train it from the beginning.")
 print("Enter 1 to generate texts from saved model and weights.")
 print("Enter 2 to resume training using last saved model and weights.")
 Answer = 0  # int(raw_input('Enter: '))
 
-if Answer == 0:
-    hidden_layers = 3  # int(input("\nNumber of Hidden Layers (Minimum 1): "))
-    neurons = []
-    if hidden_layers == 0:
-        hidden_layers = 1;
-    for i in range(0, hidden_layers):
-        pass  # neurons.append(int(input("Number of Neurons in Hidden Layer "+str(i+1)+": ")))
-    seq_len = 20  # int(input("Time Steps: "))
-    learning_rate = 0.01  # float(raw_input("Learning Rate: "))
-    dropout_rate = 0.2  # float(raw_input("Dropout Rate: "))
-    batch = 2000  # int(raw_input("Training Batch Size: "))
-neurons = [1500, 1000, 500]
 
 if Answer != 0:
     try:
@@ -76,8 +81,6 @@ if Answer != 0:
         f.close()
     except:
         print("\nUh Oh! Caught some exceptions! May be you are missing the file having time step information")
-        seq_len = 20  # int(input("Time Steps (I hope, you remember what it was): "))
-        batch = 500  # int(input("Training batch size(I hope, you remember what it was): "))
         f = open('GRUModelInfo', 'w+')
         f.write(str(seq_len) + " " + str(batch))
         f.close()
@@ -116,7 +119,7 @@ if Answer == 0 or Answer == 2:
         vocab_index = char_to_int[dataY[pattern]]
         Y[pattern, vocab_index] = 1
 
-if Answer == 0:
+if use_previous_model == 0:
     # build the model: a multi(or single depending on user input)-layered GRU based RNN
     print('\nBuilding model...')
 
@@ -135,6 +138,7 @@ if Answer == 0:
 
     model.add(Dense(vocabulary))
     model.add(Activation('softmax'))
+
     my_optimizer = RMSprop(lr=learning_rate)
     my_optimizer = Adam()
     model.compile(loss='binary_crossentropy', optimizer=my_optimizer)
@@ -148,7 +152,7 @@ if Answer == 0:
 else:
     print('\nLoading model...')
     try:
-        model = load_model('GRUModel.h5')
+        model = load_model('BestGRUWeights.h5')
     except:
         print("\nUh Oh! Caught some exceptions! May be you don't have any trained and saved model to load.")
         print("Solution: May be create and train the model anew ?")
@@ -158,9 +162,9 @@ model.summary()
 
 # define the checkpoint
 filepath = "BestGRUWeights.h5"  # Best weights for sampling will be saved here.
-checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, save_weights_only=True,
-                             mode='min')
+checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
 
+csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
 # Function for creating a sample text from a random seed (an extract from the dataset).
 # The seed acts as the input for the GRU RNN and after feed forwarding through the network it produces the output
@@ -179,7 +183,7 @@ def sample(seed):
 
         # The prediction is an array of probabilities for each unique characters.
 
-        prediction = np.asarray(prediction).astype('float64')
+        prediction = np.asarray(prediction).astype('float32')
         prediction = np.log(prediction) / temperature  # Scaling prediction values with 'temperature'
         # to manipulate diversities.
         exp_preds = np.exp(prediction)
@@ -219,7 +223,7 @@ if Answer == 0 or Answer == 2:
         print()
 
         # Train model. If you have forgotten: X = input, Y = targeted outputs
-        model.fit(X, Y, batch_size=batch, nb_epoch=15, shuffle=False, callbacks=[checkpoint])
+        model.fit(X, Y, batch_size=batch, epochs= epochs, shuffle=False, callbacks=[checkpoint, csv_logger])
         model.save_weights(
             'GRUWeights.h5')  # Saving current model state so that even after terminating the program; training
         # can be resumed for last state in the next run.
