@@ -137,7 +137,7 @@ if Answer == 0:
     model.add(Activation('softmax'))
     my_optimizer = RMSprop(lr=learning_rate)
     my_optimizer = Adam()
-    model.compile(loss='categorical_crossentropy', optimizer=my_optimizer)
+    model.compile(loss='binary_crossentropy', optimizer=my_optimizer)
 
     # save model information
     model.save('GRUModel.h5')
