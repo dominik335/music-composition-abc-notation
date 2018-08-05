@@ -63,7 +63,7 @@ if Answer == 0:
     learning_rate = 0.01  # float(raw_input("Learning Rate: "))
     dropout_rate = 0.2  # float(raw_input("Dropout Rate: "))
     batch = 2000  # int(raw_input("Training Batch Size: "))
-neurons = [2000, 1800, 1500]
+neurons = [1500, 1000, 500]
 
 if Answer != 0:
     try:
