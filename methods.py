@@ -5,6 +5,28 @@ from pandas import concat
 import keras.backend.tensorflow_backend as tfb
 import tensorflow as tf
 
+sett = '''
+gpu_restrict = True
+# gpu_restrict = False
+use_previous_model = 0
+timesteps = seq_len = 15
+batch = 2000
+dropout_rate = 0.3
+epochs = 1
+select_size = 0
+
+hidden_layers = 3
+learning_rate = 0.01  # float(raw_input("Learning Rate: "))
+neurons = [1500, 1000, 500]
+neurons = [15, 10, 5]
+temperature = 0.1
+path = "cleaned"
+sample_len = 30
+model_filename = "BestGRU.h5" 
+
+'''
+
+
 
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
 	n_vars = 1 if type(data) is list else data.shape[1]

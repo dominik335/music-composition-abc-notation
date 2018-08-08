@@ -14,36 +14,19 @@ import sys
 import os
 import tensorflow as tf
 from keras.callbacks import CSVLogger
+from methods import *
 
-gpu_restrict = True
-#gpu_restrict = False
+exec(sett)
+os.environ['TF_CPP_MIN_LOG_LEVEL']='1'
+
 
 if gpu_restrict:
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = 0.8
     session = tf.Session(config=config)
 
-use_previous_model = 0
-timesteps = seq_len = 20
-batch = 2000
-dropout_rate = 0.2
-epochs = 1
-select_size = 0
-
-hidden_layers = 3
-learning_rate = 0.01  # float(raw_input("Learning Rate: "))
-neurons = [1500, 1000, 500]
-#neurons = [15, 10, 5]
-
-
-# load Dataset
-path = "hello"
-path = "nothingam"
 dataset = open(path).read()
-
-# store the list of all unique characters in dataset
 chars = sorted(list(set(dataset)))
-
 total_chars = len(dataset)
 vocabulary = len(chars)
 
@@ -54,20 +37,6 @@ print("Vocabulary: ", vocabulary)
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
 
-mapvar = "y"
-
-if mapvar == "y" or mapvar == "Y":
-    # Show the map from Char to Int
-    print('\nGenerated Map: ')
-    for char in chars:
-        print(char, ' is mapped to ', char_to_int[char], ' and vice versa.')
-
-sample_len = 30  # int(raw_input("\nLength of sample text: "))
-temperature = 1  # float(raw_input("Temperature: "))
-
-print("Enter 0 to create a model and train it from the beginning.")
-print("Enter 1 to generate texts from saved model and weights.")
-print("Enter 2 to resume training using last saved model and weights.")
 Answer = 0  # int(raw_input('Enter: '))
 
 
@@ -88,9 +57,6 @@ if Answer != 0:
 
 if Answer == 0 or Answer == 2:
 
-    # Doing some maths so that the total patterns in future become DIVISIBLE by batch size
-    # total no. of patterns need to divisible by batch size because each batch must be of the same size..
-    # ...so that the RNN layer can be 'Stateful'
 
     index = int((total_chars - seq_len) / batch)
     index = batch * index
@@ -142,10 +108,9 @@ if use_previous_model == 0:
 
     my_optimizer = RMSprop(lr=learning_rate)
     my_optimizer = Adam()
-    model.compile(loss='binary_crossentropy', optimizer=my_optimizer)
+    model.compile(loss='categorical_crossentropy', optimizer=my_optimizer)
 
     # save model information
-    model.save('GRUModel.h5')
     f = open('GRUModelInfo', 'w+')
     f.write(str(seq_len) + " " + str(batch))
     f.close()
@@ -153,17 +118,16 @@ if use_previous_model == 0:
 else:
     print('\nLoading model...')
     try:
-        model = load_model('BestGRUWeights.h5')
+        model = load_model(model_filename)
+        print("model loaded")
     except:
-        print("\nUh Oh! Caught some exceptions! May be you don't have any trained and saved model to load.")
-        print("Solution: May be create and train the model anew ?")
+        print("\ncouldn't load model")
         sys.exit(0)
-
 model.summary()
 
 # define the checkpoint
-filepath = "BestGRUWeights.h5"  # Best weights for sampling will be saved here.
-checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
+checkpoint = ModelCheckpoint(model_filename, monitor='loss', verbose=1, save_best_only=True, mode='min')
+checkpoint2 = ModelCheckpoint(model_filename+"2.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
@@ -183,8 +147,8 @@ def sample(seed):
         prediction = prediction[0]
 
         # The prediction is an array of probabilities for each unique characters.
-
-        prediction = np.asarray(prediction).astype('float32')
+        print (prediction)
+        prediction = np.asarray(prediction).astype('float64')
         prediction = np.log(prediction) / temperature  # Scaling prediction values with 'temperature'
         # to manipulate diversities.
         exp_preds = np.exp(prediction)
@@ -209,14 +173,6 @@ def sample(seed):
 
 
 if Answer == 0 or Answer == 2:
-    if Answer == 2:
-        filename = "GRUWeights.h5"
-        try:
-            model.load_weights(filename)
-        except:
-            print("\nUh Oh! Caught some exceptions! May be you don't have any trained and saved weights to load.")
-            print("Solution: May be create and train the model anew ?")
-            sys.exit(0)
     # Train Model and print sample text at each epoch.
     for iteration in range(1, 60):
         print()
@@ -224,32 +180,17 @@ if Answer == 0 or Answer == 2:
         print()
 
         # Train model. If you have forgotten: X = input, Y = targeted outputs
-        model.fit(X, Y, batch_size=batch, epochs= epochs, shuffle=False, callbacks=[checkpoint, csv_logger])
-        model.save_weights(
-            'GRUWeights.h5')  # Saving current model state so that even after terminating the program; training
+        model.fit(X, Y, batch_size=batch, epochs= epochs, shuffle=False, callbacks=[checkpoint,checkpoint2, csv_logger])
+        model.save('mymodel.h5')  # Saving current model state so that even after terminating the program; training
         # can be resumed for last state in the next run.
         print()
 
         # Randomly choosing a sequence from dataset to serve as a seed for sampling
         start_index = random.randint(0, total_chars - seq_len - 1)
         seed = dataset[start_index: start_index + seq_len]
+        print("sampling")
+        sample(seed)
+        print("sampled")
 
-        sample(seed)
 else:
-    # load the network weights
-    filename = "BestGRUWeights.h5"
-    try:
-        model.load_weights(filename)
-    except:
-        print("\nUh Oh! Caught some exceptions! May be you don't have any trained and saved weights to load.")
-        print("Solution: May be create and train the model anew ?")
-        sys.exit(0)
-    Answer2 = "y"
-    while Answer2 == "y" or Answer2 == "Y":
-        print("\nGenerating Text:\n")
-        # Randomly choosing a sequence from dataset to serve as a seed for sampling
-        start_index = random.randint(0, total_chars - seq_len - 1)
-        seed = dataset[start_index: start_index + seq_len]
-        sample(seed)
-        print()
-        Answer2 = input("Generate another sample Text? (y/n): ")
+    pass
