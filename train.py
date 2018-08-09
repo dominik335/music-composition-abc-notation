@@ -154,7 +154,6 @@ def sample(seed):
         prediction = prediction[0]
 
         # The prediction is an array of probabilities for each unique characters.
-        print (prediction)
         prediction = np.asarray(prediction).astype('float64')
         prediction = np.log(prediction) / temperature  # Scaling prediction values with 'temperature'
         # to manipulate diversities.

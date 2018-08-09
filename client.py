@@ -25,6 +25,8 @@ from keras.models import Sequential
 from keras.layers import Dense
 from methods import *
 
+exec(sett)
+
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'
 
 #misc
@@ -35,15 +37,12 @@ from pandas import concat
 import tensorflow as tf
 
 sample_len = 10
-timesteps = seq_len = 40
+timesteps = seq_len = 20
 
 
-modpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/2/" + "GRUModel.h5"
-weighpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/2/" + "BestGRUWeights.h5"
+modpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/1/" + model_filename
 model = load_model(modpath)
 print ("Model loaded")
-model.load_weights(weighpath)
-print ("Weights loaded")
 
 path = "/home/dominik/PycharmProjects/notacjaabc/cleaned"
 inputf = "/home/dominik/Pulpit/MAGISTERKA/testoweMidiInput/4.abc"
