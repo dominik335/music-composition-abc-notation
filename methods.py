@@ -9,10 +9,10 @@ sett = '''
 gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
-timesteps = seq_len = 15
-batch = 2000
+timesteps = seq_len = 20
+batch = 3000
 dropout_rate = 0.3
-epochs = 1
+epochs = 3
 select_size = 0
 
 hidden_layers = 3
