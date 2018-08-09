@@ -25,7 +25,7 @@ if gpu_restrict:
     config.gpu_options.per_process_gpu_memory_fraction = 0.8
     session = tf.Session(config=config)
 
-dataset = open(path).read()
+dataset = open(data_file).read()
 chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
 vocabulary = len(chars)
@@ -74,6 +74,7 @@ if Answer == 0 or Answer == 2:
 
     total_patterns = len(dataX)
     print("\nTotal Patterns: ", total_patterns)
+    trainPortion = int(0.8 * (total_patterns))
 
     # One Hot Encoding...
     X = np.zeros((total_patterns, seq_len, vocabulary), dtype=np.bool)
@@ -86,6 +87,12 @@ if Answer == 0 or Answer == 2:
         vocab_index = char_to_int[dataY[pattern]]
         Y[pattern, vocab_index] = 1
 
+
+    Xtr = X[:trainPortion, :]
+    Xval = X[trainPortion:, :]
+
+    Ytr = Y[:trainPortion, :]
+    Yval = Y[trainPortion:, :]
 if use_previous_model == 0:
     # build the model: a multi(or single depending on user input)-layered GRU based RNN
     print('\nBuilding model...')
@@ -108,7 +115,7 @@ if use_previous_model == 0:
 
     my_optimizer = RMSprop(lr=learning_rate)
     my_optimizer = Adam()
-    model.compile(loss='categorical_crossentropy', optimizer=my_optimizer)
+    model.compile(loss='categorical_crossentropy', optimizer=my_optimizer,metrics=['acc'])
 
     # save model information
     f = open('GRUModelInfo', 'w+')
@@ -127,7 +134,7 @@ model.summary()
 
 # define the checkpoint
 checkpoint = ModelCheckpoint(model_filename, monitor='loss', verbose=1, save_best_only=True, mode='min')
-checkpoint2 = ModelCheckpoint(model_filename+"2.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+checkpoint2 = ModelCheckpoint(model_filename+"val.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
@@ -174,13 +181,14 @@ def sample(seed):
 
 if Answer == 0 or Answer == 2:
     # Train Model and print sample text at each epoch.
+
     for iteration in range(1, 60):
         print()
         print('Iteration: ', iteration)
         print()
 
         # Train model. If you have forgotten: X = input, Y = targeted outputs
-        model.fit(X, Y, batch_size=batch, epochs= epochs, shuffle=False, callbacks=[checkpoint,checkpoint2, csv_logger])
+        model.fit(Xtr, Ytr, batch_size=batch, epochs= epochs, validation_data=(Xval,Yval), shuffle=False, callbacks=[checkpoint,checkpoint2, csv_logger])
         model.save('mymodel.h5')  # Saving current model state so that even after terminating the program; training
         # can be resumed for last state in the next run.
         print()

@@ -47,7 +47,7 @@ print ("Weights loaded")
 
 path = "/home/dominik/PycharmProjects/notacjaabc/cleaned"
 inputf = "/home/dominik/Pulpit/MAGISTERKA/testoweMidiInput/4.abc"
-dataset = open(path).read()
+dataset = open(data_file).read()
 
 
 chars = sorted(list(set(dataset)))
