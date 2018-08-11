@@ -58,7 +58,11 @@ if Answer != 0:
 if Answer == 0 or Answer == 2:
 
 
+    index = int((total_chars - seq_len) / batch)
+    index = batch * index
+    dataset = dataset[:index + seq_len]
 
+    total_chars = len(dataset)
 
     # prepare input data and output(target) data
     # (X signified Inputs and Y signifies Output(targeted-output in this case)
@@ -91,12 +95,9 @@ if Answer == 0 or Answer == 2:
     Ytr = Y[:trainPortion, :]
     Yval = Y[trainPortion:, :]
 
-    index = int(((len(Xtr) - seq_len)) / batch)
-    index = int(batch * index)
-    Xtr = Xtr[:index + seq_len]
-    Ytr = Ytr[:index + seq_len]
-    total_chars = len(Xtr)
-
+    index = int((total_chars - seq_len) / batch)
+    index = batch * index
+    dataset = dataset[:index + seq_len]
 
 if use_previous_model == 0:
     # build the model: a multi(or single depending on user input)-layered GRU based RNN

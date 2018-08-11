@@ -10,7 +10,7 @@ gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
 timesteps = seq_len = 20
-batch = 4000
+batch = 600
 dropout_rate = 0.3
 epochs = 3
 select_size = 0
