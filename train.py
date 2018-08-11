@@ -91,7 +91,7 @@ if Answer == 0 or Answer == 2:
     Ytr = Y[:trainPortion, :]
     Yval = Y[trainPortion:, :]
 
-    index = int(((len*Xtr) - seq_len)) / batch)
+    index = int(((len(Xtr) - seq_len)) / batch)
     index = int(trainPortion* batch * index)
     Xtr = Xtr[:index + seq_len]
     Ytr = Ytr[:index + seq_len]
