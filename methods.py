@@ -15,10 +15,10 @@ dropout_rate = 0.3
 epochs = 3
 select_size = 0
 
-hidden_layers = 3
+hidden_layers = 2
 learning_rate = 0.01  # float(raw_input("Learning Rate: "))
-neurons = [1500, 1000, 500]
-neurons = [15, 10, 5]
+neurons = [500,400]
+#neurons = [15, 10, 5]
 temperature = 0.1
 data_file = "cleaned"
 sample_len = 30

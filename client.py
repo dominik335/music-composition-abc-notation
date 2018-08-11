@@ -36,9 +36,10 @@ from pandas import DataFrame
 from pandas import concat
 import tensorflow as tf
 
-sample_len = 10
-timesteps = seq_len = 20
+sample_len = 30
 
+model_filename = "BestGRU.h5val.h5"
+#model_filename = "BestGRU.h5"
 
 modpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/1/" + model_filename
 model = load_model(modpath)
@@ -57,7 +58,7 @@ seed = open(inputf).read()
 print((vocabulary))
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
-
+generated = ""
 
 for i in range(sample_len):
         # One hot encoding the input seed
@@ -85,7 +86,7 @@ for i in range(sample_len):
         # The next character (to generate) is mapped to the randomly chosen integer
         # Procuring the next character from the dictionary by putting in the chosen integer
         next_char = int_to_char[RNG_int]
-
+        generated = generated +next_char
         # Display the chosen character
         sys.stdout.write(next_char)
         sys.stdout.flush()
@@ -94,6 +95,6 @@ for i in range(sample_len):
 
 
 
-
+print ("generated: "+ generated)
 
 
