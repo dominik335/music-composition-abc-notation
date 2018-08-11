@@ -92,7 +92,7 @@ if Answer == 0 or Answer == 2:
     Yval = Y[trainPortion:, :]
 
     index = int(((len(Xtr) - seq_len)) / batch)
-    index = int(trainPortion* batch * index)
+    index = int(batch * index)
     Xtr = Xtr[:index + seq_len]
     Ytr = Ytr[:index + seq_len]
     total_chars = len(Xtr)
