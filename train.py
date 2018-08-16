@@ -162,7 +162,6 @@ if use_previous_model == 0:
     model.add(Dense(vocabulary))
     model.add(Activation('softmax'))
 
-    my_optimizer = RMSprop(lr=learning_rate)
     my_optimizer = Adam()
     model.compile(loss='categorical_crossentropy', optimizer=my_optimizer,metrics=['acc'])
 
@@ -186,10 +185,6 @@ checkpoint = ModelCheckpoint(model_filename, monitor='loss', verbose=1, save_bes
 checkpoint2 = ModelCheckpoint(model_filename+"val.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
-
-# Function for creating a sample text from a random seed (an extract from the dataset).
-# The seed acts as the input for the GRU RNN and after feed forwarding through the network it produces the output
-# (the output can be considered to be the prediction for the next character)
 
 
 if Answer == 0 or Answer == 2:

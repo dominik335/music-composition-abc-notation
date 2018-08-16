@@ -11,16 +11,16 @@ gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
 timesteps = seq_len = 60
-batch = 3000
-dropout_rate = 0.3
+batch = 1200
+dropout_rate = 0.5
 epochs = 3
 select_size = 0
 
-hidden_layers = 3
-learning_rate = 0.01  # float(raw_input("Learning Rate: "))
-neurons = [100,200, 100]
+hidden_layers = 2
+learning_rate = 0.01 
+neurons = [150,200]
 #neurons = [15, 10]
-temperature = 0.3
+temperature = 0.6
 data_file = "cleaned"
 sample_len = 30
 model_filename = "BestGRU.h5" 

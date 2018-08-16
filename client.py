@@ -83,7 +83,7 @@ model = load_model(modpath)
 print ("Model loaded")
 
 path = "/home/dominik/PycharmProjects/notacjaabc/cleaned"
-inputf = "/home/dominik/Pulpit/MAGISTERKA/testoweMidiInput/4.abc"
+inputf = "/home/dominik/Pulpit/MAGISTERKA/testoweMidiInput/1.abc"
 outputf = inputf + "enriched.abc"
 
 dataset = open(data_file).read()
