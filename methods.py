@@ -11,15 +11,15 @@ gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
 timesteps = seq_len = 60
-batch = 600
+batch = 3000
 dropout_rate = 0.3
 epochs = 3
 select_size = 0
 
-hidden_layers = 2
+hidden_layers = 3
 learning_rate = 0.01  # float(raw_input("Learning Rate: "))
-neurons = [500,400]
-#neurons = [15, 10, 5]
+neurons = [100,200, 100]
+#neurons = [15, 10]
 temperature = 0.4
 data_file = "cleaned"
 sample_len = 30

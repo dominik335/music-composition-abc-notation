@@ -75,9 +75,14 @@ if Answer == 0 or Answer == 2:
         dataX.append(dataset[i:i + seq_len])  # Example Input Data: Languag
         dataY.append(dataset[i + seq_len])  # Example of corresponding Target Output Data: e
 
+
     total_patterns = len(dataX)
     print("\nTotal Patterns: ", total_patterns)
-    trainPortion = int(0.8 * (total_patterns))
+    index = int((0.9*len(dataX)) / batch)
+    print(index)
+    index = index * batch
+    print(index)
+    trainPortion = int(index)
 
     # One Hot Encoding...
     X = np.zeros((total_patterns, seq_len, vocabulary), dtype=np.bool)
@@ -97,9 +102,6 @@ if Answer == 0 or Answer == 2:
     Ytr = Y[:trainPortion, :]
     Yval = Y[trainPortion:, :]
 
-    index = int((total_chars - seq_len) / batch)
-    index = batch * index
-    dataset = dataset[:index + seq_len]
 
 if use_previous_model == 0:
     # build the model: a multi(or single depending on user input)-layered GRU based RNN
