@@ -7,6 +7,7 @@ from keras.layers import Dense, Activation, Dropout
 from keras.layers import GRU
 from keras.optimizers import RMSprop, Adam
 from keras.callbacks import ModelCheckpoint
+from keras import regularizers
 from keras.models import load_model
 import numpy as np
 import random
@@ -150,13 +151,13 @@ if use_previous_model == 0:
     if hidden_layers == 1:
         model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True))
     else:
-        model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True, return_sequences=True))
+        model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True, kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
     model.add(Dropout(dropout_rate))
     for i in range(1, hidden_layers):
         if i == (hidden_layers - 1):
-            model.add(GRU(neurons[i], stateful=True))
+            model.add(GRU(neurons[i], kernel_regularizer=regularizers.l2(0.01), stateful=True))
         else:
-            model.add(GRU(neurons[i], stateful=True, return_sequences=True))
+            model.add(GRU(neurons[i], stateful=True,kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
         model.add(Dropout(dropout_rate))
 
     model.add(Dense(vocabulary))
