@@ -6,10 +6,11 @@ import keras.backend.tensorflow_backend as tfb
 import tensorflow as tf
 
 sett = '''
+sample_len = 100
 gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
-timesteps = seq_len = 20
+timesteps = seq_len = 60
 batch = 600
 dropout_rate = 0.3
 epochs = 3
@@ -19,33 +20,25 @@ hidden_layers = 2
 learning_rate = 0.01  # float(raw_input("Learning Rate: "))
 neurons = [500,400]
 #neurons = [15, 10, 5]
-temperature = 0.1
+temperature = 0.4
 data_file = "cleaned"
 sample_len = 30
 model_filename = "BestGRU.h5" 
 
 '''
 
+def removelineswith(seed,pattern):
+    out = ""
+    for i in seed.split('\n'):
+        if not i.startswith(pattern):
+            out = out+ i
+            out = out + '\n'
+    out = out[:out.rfind('\n')]
+    return out
 
-
-
-def convert(path):
-    timeres = 20
-    midi_data = pretty_midi.PrettyMIDI(path)
-    roll = midi_data.get_piano_roll(fs=timeres)
-    roll= np.where(roll>0 ,1,0)
-    while(np.all(roll[:,0] == 0)): #drop leading "0" columns
-        roll = np.delete(roll,0,1)
-    return np.transpose(roll[40:100]) #pitch LtR, time UtD
-
-
-def convert_back(roll,path):
-    midi_out_path = path.split('.')[0] + "-enriched.midi"
-    timeres = 20
-    roll = np.transpose(roll)
-    roll= np.where(roll>0.5 ,127,0)
-    leading_zeros=np.zeros([40,roll.shape[1]])
-    roll = np.vstack((leading_zeros, roll))
-    bck = piano_roll_to_pretty_midi(roll, fs = timeres)
-    bck.write(midi_out_path)
+def convert(seed):
+    banned_list= ["T:", "%", "W:", "w:", "K:", "H:", "D:" "Z:", "R:"]
+    for item in banned_list:
+        seed = removelineswith(seed,item)
+    return seed
 

@@ -26,6 +26,8 @@ if gpu_restrict:
     session = tf.Session(config=config)
 
 dataset = open(data_file).read()
+dataset = convert(dataset)
+
 chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
 vocabulary = len(chars)
@@ -147,41 +149,6 @@ csv_logger = CSVLogger('log.csv', append=True, separator=';')
 # Function for creating a sample text from a random seed (an extract from the dataset).
 # The seed acts as the input for the GRU RNN and after feed forwarding through the network it produces the output
 # (the output can be considered to be the prediction for the next character)
-
-def sample(seed):
-    for i in range(sample_len):
-        # One hot encoding the input seed
-        x = np.zeros((batch, seq_len, vocabulary))
-        for seq_pos in range(seq_len):
-            vocab_index = char_to_int[seed[seq_pos]]
-            x[0, seq_pos, vocab_index] = 1
-        # procuring the output (or prediction) from the network
-        prediction = model.predict(x, batch_size=batch, verbose=0)
-        prediction = prediction[0]
-
-        # The prediction is an array of probabilities for each unique characters.
-        prediction = np.asarray(prediction).astype('float64')
-        prediction = np.log(prediction) / temperature  # Scaling prediction values with 'temperature'
-        # to manipulate diversities.
-        exp_preds = np.exp(prediction)
-        prediction = exp_preds / np.sum(exp_preds)
-
-        # Randomly an integer(mapped to a character) is chosen based on its likelihood
-        # as described in prediction list
-
-        RNG_int = np.random.choice(range(vocabulary), p=prediction.ravel())
-
-        # The next character (to generate) is mapped to the randomly chosen integer
-        # Procuring the next character from the dictionary by putting in the chosen integer
-        next_char = int_to_char[RNG_int]
-
-        # Display the chosen character
-        sys.stdout.write(next_char)
-        sys.stdout.flush()
-        # modifying seed for the next iteration for finding the next character
-        seed = seed[1:] + next_char
-
-    print()
 
 
 if Answer == 0 or Answer == 2:
