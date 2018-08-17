@@ -66,7 +66,7 @@ if gpu_restrict:
     session = tf.Session(config=config)
 
 dataset = open(data_file).read()
-dataset = convert(dataset)
+#dataset = convert(dataset)
 
 chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
