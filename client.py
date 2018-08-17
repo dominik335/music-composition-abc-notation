@@ -78,7 +78,7 @@ sample_len = 40
 model_filename = "BestGRU.h5val.h5"
 #model_filename = "BestGRU.h5"
 
-modpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/4/" + model_filename
+modpath = "/home/dominik/Pulpit/MAGISTERKA/pobrane wagi/5/" + model_filename
 model = load_model(modpath)
 print ("Model loaded")
 
@@ -96,7 +96,6 @@ seed = open(inputf).read()
 loadedcontent = seed
 
 seed = convert(seed)
-print(seed)
 print("input len " + str(len(seed)))
 seed = seed[-seq_len:]
 

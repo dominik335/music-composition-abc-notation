@@ -21,7 +21,9 @@ learning_rate = 0.01
 neurons = [150,200]
 #neurons = [15, 10]
 temperature = 0.6
-data_file = "cleaned"
+#data_file = "cleaned"
+data_file = "jazz"
+
 sample_len = 30
 model_filename = "BestGRU.h5" 
 
