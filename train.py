@@ -7,7 +7,7 @@ from keras.optimizers import RMSprop, Adam
 from keras.callbacks import ModelCheckpoint
 from keras import regularizers
 from keras.models import load_model
-#import numpy as np
+import numpy as np
 import random
 import sys
 import os
