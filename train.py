@@ -1,5 +1,3 @@
-# Multilayered (or singlelayered) GRU based RNN for text generation using Keras libraries
-
 # import libraries
 from __future__ import print_function
 from keras.models import Sequential
@@ -9,7 +7,7 @@ from keras.optimizers import RMSprop, Adam
 from keras.callbacks import ModelCheckpoint
 from keras import regularizers
 from keras.models import load_model
-import numpy as np
+#import numpy as np
 import random
 import sys
 import os
@@ -66,7 +64,7 @@ if gpu_restrict:
     session = tf.Session(config=config)
 
 dataset = open(data_file).read()
-#dataset = convert(dataset)
+dataset = convert(dataset)
 
 chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
@@ -151,13 +149,13 @@ if use_previous_model == 0:
     if hidden_layers == 1:
         model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True))
     else:
-        model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True, kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
+        model.add(GRU(neurons[0], activation='relu', batch_input_shape=(batch, seq_len, vocabulary), stateful=True, kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
     model.add(Dropout(dropout_rate))
     for i in range(1, hidden_layers):
         if i == (hidden_layers - 1):
-            model.add(GRU(neurons[i], kernel_regularizer=regularizers.l2(0.01), stateful=True))
+            model.add(GRU(neurons[i], kernel_regularizer=regularizers.l2(0.01), activation='relu', stateful=True))
         else:
-            model.add(GRU(neurons[i], stateful=True,kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
+            model.add(GRU(neurons[i], stateful=True, activation='relu' , kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
         model.add(Dropout(dropout_rate))
 
     model.add(Dense(vocabulary))

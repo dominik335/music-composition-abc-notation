@@ -1,7 +1,3 @@
-import numpy as np
-import pretty_midi
-from pandas import DataFrame
-from pandas import concat
 import keras.backend.tensorflow_backend as tfb
 import tensorflow as tf
 
@@ -11,7 +7,7 @@ gpu_restrict = True
 # gpu_restrict = False
 use_previous_model = 0
 timesteps = seq_len = 60
-batch = 1200
+batch = 2500
 dropout_rate = 0.5
 epochs = 3
 select_size = 0

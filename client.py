@@ -73,7 +73,7 @@ from pandas import DataFrame
 from pandas import concat
 import tensorflow as tf
 
-sample_len = 40
+sample_len = 80
 
 model_filename = "BestGRU.h5val.h5"
 #model_filename = "BestGRU.h5"
@@ -87,7 +87,7 @@ inputf = "/home/dominik/Pulpit/MAGISTERKA/testoweMidiInput/1.abc"
 outputf = inputf + "enriched.abc"
 
 dataset = open(data_file).read()
-
+dataset = convert(dataset)
 
 chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
