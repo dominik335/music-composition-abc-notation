@@ -1,25 +1,23 @@
 import keras.backend.tensorflow_backend as tfb
 import tensorflow as tf
 
-sett = '''
+settings = '''
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+tf.logging.set_verbosity(tf.logging.ERROR)
 sample_len = 100
 gpu_restrict = True
-# gpu_restrict = False
 use_previous_model = 0
 timesteps = seq_len = 60
-batch = 2500
+batch = 600
 dropout_rate = 0.5
 epochs = 3
 select_size = 0
 
 hidden_layers = 2
 learning_rate = 0.01 
-neurons = [150,200]
-#neurons = [15, 10]
-temperature = 0.6
-#data_file = "cleaned"
-data_file = "jazz"
-
+neurons = [10,20]
+temperature = 0.1
+data_file = "cleaned"
 sample_len = 30
 model_filename = "BestGRU.h5" 
 

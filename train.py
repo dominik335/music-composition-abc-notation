@@ -27,6 +27,7 @@ def sample(seed):
         # procuring the output (or prediction) from the network
         prediction = model.predict(x, batch_size=batch, verbose=0)
         prediction = prediction[0]
+        # save model information
 
         # The prediction is an array of probabilities for each unique characters.
         prediction = np.asarray(prediction).astype('float64')
@@ -45,18 +46,11 @@ def sample(seed):
         next_char = int_to_char[RNG_int]
         generated = generated+next_char
         # Display the chosen character
-        #sys.stdout.write(next_char)
-        #sys.stdout.flush()
-        # modifying seed for the next iteration for finding the next character
         seed = seed[1:] + next_char
-
     print()
     return (generated)
 
-
-exec(sett)
-os.environ['TF_CPP_MIN_LOG_LEVEL']='1'
-
+exec(settings)
 
 if gpu_restrict:
     config = tf.ConfigProto()
@@ -77,72 +71,47 @@ print("Vocabulary: ", vocabulary)
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
 
-Answer = 0  # int(raw_input('Enter: '))
+index = int((total_chars - seq_len) / batch)
+index = batch * index
+dataset = dataset[:index + seq_len]
+total_chars = len(dataset)
+
+dataX = []
+dataY = []
+
+for i in range(0, total_chars - seq_len):  # Example of an extract of dataset: Language
+    dataX.append(dataset[i:i + seq_len])  # Example Input Data: Languag
+    dataY.append(dataset[i + seq_len])  # Example of corresponding Target Output Data: e
 
 
-if Answer != 0:
-    try:
-        f = open('GRUModelInfo', "r")
-        lines = f.readlines()
-        for i in lines:
-            thisline = i.split(" ")
-        seq_len = int(thisline[0])
-        batch = int(thisline[1])
-        f.close()
-    except:
-        print("\nUh Oh! Caught some exceptions! May be you are missing the file having time step information")
-        f = open('GRUModelInfo', 'w+')
-        f.write(str(seq_len) + " " + str(batch))
-        f.close()
+total_patterns = len(dataX)
+print("\nTotal Patterns: ", total_patterns)
+index = int((0.9*len(dataX)) / batch)
+print(index)
+index = index * batch
+print(index)
+trainPortion = int(index)
 
-if Answer == 0 or Answer == 2:
+# One Hot Encoding...
+X = np.zeros((total_patterns, seq_len, vocabulary), dtype=np.bool)
+Y = np.zeros((total_patterns, vocabulary), dtype=np.bool)
 
-
-    index = int((total_chars - seq_len) / batch)
-    index = batch * index
-    dataset = dataset[:index + seq_len]
-
-    total_chars = len(dataset)
-
-    # prepare input data and output(target) data
-    # (X signified Inputs and Y signifies Output(targeted-output in this case)
-    dataX = []
-    dataY = []
-
-    for i in range(0, total_chars - seq_len):  # Example of an extract of dataset: Language
-        dataX.append(dataset[i:i + seq_len])  # Example Input Data: Languag
-        dataY.append(dataset[i + seq_len])  # Example of corresponding Target Output Data: e
+for pattern in range(total_patterns):
+    for seq_pos in range(seq_len):
+        vocab_index = char_to_int[dataX[pattern][seq_pos]]
+        X[pattern, seq_pos, vocab_index] = 1
+    vocab_index = char_to_int[dataY[pattern]]
+    Y[pattern, vocab_index] = 1
 
 
-    total_patterns = len(dataX)
-    print("\nTotal Patterns: ", total_patterns)
-    index = int((0.9*len(dataX)) / batch)
-    print(index)
-    index = index * batch
-    print(index)
-    trainPortion = int(index)
+Xtr = X[:trainPortion, :]
+Xval = X[trainPortion:, :]
 
-    # One Hot Encoding...
-    X = np.zeros((total_patterns, seq_len, vocabulary), dtype=np.bool)
-    Y = np.zeros((total_patterns, vocabulary), dtype=np.bool)
-
-    for pattern in range(total_patterns):
-        for seq_pos in range(seq_len):
-            vocab_index = char_to_int[dataX[pattern][seq_pos]]
-            X[pattern, seq_pos, vocab_index] = 1
-        vocab_index = char_to_int[dataY[pattern]]
-        Y[pattern, vocab_index] = 1
-
-
-    Xtr = X[:trainPortion, :]
-    Xval = X[trainPortion:, :]
-
-    Ytr = Y[:trainPortion, :]
-    Yval = Y[trainPortion:, :]
+Ytr = Y[:trainPortion, :]
+Yval = Y[trainPortion:, :]
 
 
 if use_previous_model == 0:
-    # build the model: a multi(or single depending on user input)-layered GRU based RNN
     print('\nBuilding model...')
 
     model = Sequential()
@@ -164,48 +133,37 @@ if use_previous_model == 0:
     my_optimizer = Adam()
     model.compile(loss='categorical_crossentropy', optimizer=my_optimizer,metrics=['acc'])
 
-    # save model information
-    f = open('GRUModelInfo', 'w+')
-    f.write(str(seq_len) + " " + str(batch))
-    f.close()
 
 else:
     print('\nLoading model...')
     try:
         model = load_model(model_filename)
-        print("model loaded")
+        print("Model loaded!")
     except:
-        print("\ncouldn't load model")
-        sys.exit(0)
+        print("\nCouldn't load model! Exiting...")
+        sys.exit(1)
 model.summary()
 
 # define the checkpoint
 checkpoint = ModelCheckpoint(model_filename, monitor='loss', verbose=1, save_best_only=True, mode='min')
 checkpoint2 = ModelCheckpoint(model_filename+"val.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-
+#define logger
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
-
-if Answer == 0 or Answer == 2:
-    # Train Model and print sample text at each epoch.
-
-    for iteration in range(1, 60):
+for iteration in range(1, 60):
         print()
         print('Iteration: ', iteration)
         print()
 
         # Train model. If you have forgotten: X = input, Y = targeted outputs
         model.fit(Xtr, Ytr, batch_size=batch, epochs= epochs, validation_data=(Xval,Yval), shuffle=False, callbacks=[checkpoint,checkpoint2, csv_logger])
-        model.save('mymodel.h5')  # Saving current model state so that even after terminating the program; training
-        # can be resumed for last state in the next run.
+        model.save('mymodel.h5')
         print()
 
-        # Randomly choosing a sequence from dataset to serve as a seed for sampling
+        '''        # Randomly choosing a sequence from dataset to serve as a seed for sampling
         start_index = random.randint(0, total_chars - seq_len - 1)
         seed = dataset[start_index: start_index + seq_len]
         print("sampling")
         sample(seed)
         print("sampled")
-
-else:
-    pass
+'''
