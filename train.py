@@ -16,40 +16,6 @@ from keras.callbacks import CSVLogger
 from methods import *
 
 
-def sample(seed):
-    generated = ""
-    for i in range(sample_len):
-        # One hot encoding the input seed
-        x = np.zeros((batch, seq_len, vocabulary))
-        for seq_pos in range(seq_len):
-            vocab_index = char_to_int[seed[seq_pos]]
-            x[0, seq_pos, vocab_index] = 1
-        # procuring the output (or prediction) from the network
-        prediction = model.predict(x, batch_size=batch, verbose=0)
-        prediction = prediction[0]
-        # save model information
-
-        # The prediction is an array of probabilities for each unique characters.
-        prediction = np.asarray(prediction).astype('float64')
-        prediction = np.log(prediction) / temperature  # Scaling prediction values with 'temperature'
-        # to manipulate diversities.
-        exp_preds = np.exp(prediction)
-        prediction = exp_preds / np.sum(exp_preds)
-
-        # Randomly an integer(mapped to a character) is chosen based on its likelihood
-        # as described in prediction list
-
-        RNG_int = np.random.choice(range(vocabulary), p=prediction.ravel())
-
-        # The next character (to generate) is mapped to the randomly chosen integer
-        # Procuring the next character from the dictionary by putting in the chosen integer
-        next_char = int_to_char[RNG_int]
-        generated = generated+next_char
-        # Display the chosen character
-        seed = seed[1:] + next_char
-    print()
-    return (generated)
-
 exec(settings)
 
 if gpu_restrict:
@@ -64,40 +30,37 @@ chars = sorted(list(set(dataset)))
 total_chars = len(dataset)
 vocabulary = len(chars)
 
-print("Total Characters: ", total_chars)
-print("Vocabulary: ", vocabulary)
+print("Total number of characters: ", total_chars)
+print("Vocabulary size: ", vocabulary)
 
-# Creating dictionary or map in order to map all characters to an integer and vice versa
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
 
-index = int((total_chars - seq_len) / batch)
+index = int((total_chars - timesteps) / batch)
 index = batch * index
-dataset = dataset[:index + seq_len]
+dataset = dataset[:index + timesteps]
 total_chars = len(dataset)
 
 dataX = []
 dataY = []
 
-for i in range(0, total_chars - seq_len):  # Example of an extract of dataset: Language
-    dataX.append(dataset[i:i + seq_len])  # Example Input Data: Languag
-    dataY.append(dataset[i + seq_len])  # Example of corresponding Target Output Data: e
+for i in range(0, total_chars - timesteps):
+    dataX.append(dataset[i:i + timesteps])
+    dataY.append(dataset[i + timesteps])
 
 
 total_patterns = len(dataX)
-print("\nTotal Patterns: ", total_patterns)
+print("\nTotal number of learning sequences: ", total_patterns)
 index = int((0.9*len(dataX)) / batch)
-print(index)
 index = index * batch
-print(index)
 trainPortion = int(index)
 
 # One Hot Encoding...
-X = np.zeros((total_patterns, seq_len, vocabulary), dtype=np.bool)
+X = np.zeros((total_patterns, timesteps, vocabulary), dtype=np.bool)
 Y = np.zeros((total_patterns, vocabulary), dtype=np.bool)
 
 for pattern in range(total_patterns):
-    for seq_pos in range(seq_len):
+    for seq_pos in range(timesteps):
         vocab_index = char_to_int[dataX[pattern][seq_pos]]
         X[pattern, seq_pos, vocab_index] = 1
     vocab_index = char_to_int[dataY[pattern]]
@@ -116,17 +79,16 @@ if use_previous_model == 0:
 
     model = Sequential()
     if hidden_layers == 1:
-        model.add(GRU(neurons[0], batch_input_shape=(batch, seq_len, vocabulary), stateful=True))
+        model.add(GRU(neurons[0], batch_input_shape=(batch, timesteps, vocabulary), stateful=True))
     else:
-        model.add(GRU(neurons[0], activation='relu', batch_input_shape=(batch, seq_len, vocabulary), stateful=True, kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
+        model.add(GRU(neurons[0], batch_input_shape=(batch, timesteps, vocabulary), stateful=True, return_sequences=True))
     model.add(Dropout(dropout_rate))
     for i in range(1, hidden_layers):
         if i == (hidden_layers - 1):
-            model.add(GRU(neurons[i], kernel_regularizer=regularizers.l2(0.01), activation='relu', stateful=True))
+            model.add(GRU(neurons[i], activation='relu', stateful=True))
         else:
-            model.add(GRU(neurons[i], stateful=True, activation='relu' , kernel_regularizer=regularizers.l2(0.01), return_sequences=True))
+            model.add(GRU(neurons[i], stateful=True, return_sequences=True))
         model.add(Dropout(dropout_rate))
-
     model.add(Dense(vocabulary))
     model.add(Activation('softmax'))
 
@@ -142,6 +104,7 @@ else:
     except:
         print("\nCouldn't load model! Exiting...")
         sys.exit(1)
+
 model.summary()
 
 # define the checkpoint
@@ -150,20 +113,9 @@ checkpoint2 = ModelCheckpoint(model_filename+"val.h5", monitor='val_loss', verbo
 #define logger
 csv_logger = CSVLogger('log.csv', append=True, separator=';')
 
-for iteration in range(1, 60):
+for iteration in range(1, 10):
         print()
         print('Iteration: ', iteration)
         print()
-
-        # Train model. If you have forgotten: X = input, Y = targeted outputs
         model.fit(Xtr, Ytr, batch_size=batch, epochs= epochs, validation_data=(Xval,Yval), shuffle=False, callbacks=[checkpoint,checkpoint2, csv_logger])
         model.save('mymodel.h5')
-        print()
-
-        '''        # Randomly choosing a sequence from dataset to serve as a seed for sampling
-        start_index = random.randint(0, total_chars - seq_len - 1)
-        seed = dataset[start_index: start_index + seq_len]
-        print("sampling")
-        sample(seed)
-        print("sampled")
-'''

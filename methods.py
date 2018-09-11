@@ -1,13 +1,10 @@
-import keras.backend.tensorflow_backend as tfb
-import tensorflow as tf
-
 settings = '''
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tf.logging.set_verbosity(tf.logging.ERROR)
 sample_len = 100
 gpu_restrict = True
 use_previous_model = 0
-timesteps = seq_len = 60
+timesteps = 60
 batch = 600
 dropout_rate = 0.5
 epochs = 3

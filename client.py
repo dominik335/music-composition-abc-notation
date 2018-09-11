@@ -15,8 +15,8 @@ exec(settings)
 def sample(seed):
     generated = ""
     for i in range(sample_len):
-        x = np.zeros((batch, seq_len, vocabulary))
-        for seq_pos in range(seq_len):
+        x = np.zeros((batch, timesteps, vocabulary))
+        for seq_pos in range(timesteps):
             vocab_index = char_to_int[seed[seq_pos]]
             x[0, seq_pos, vocab_index] = 1
         prediction = model.predict(x, batch_size=batch, verbose=0)
@@ -49,7 +49,7 @@ loadedcontent = seed
 
 print ("Model and input data loaded successfully!")
 seed = convert(seed)
-seed = seed[-seq_len:]
+seed = seed[-timesteps:]
 
 char_to_int = {c: i for i, c in enumerate(chars)}
 int_to_char = {i: c for i, c in enumerate(chars)}
